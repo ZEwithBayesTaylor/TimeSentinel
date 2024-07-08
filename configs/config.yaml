@@ -1,0 +1,59 @@
+server:
+  http:
+    addr: 0.0.0.0:9001
+    timeout: 1s
+  grpc:
+    addr: 0.0.0.0:9002
+    timeout: 1s
+  task:
+    tasks:
+      - name: "定时运行scheduler"
+        type: "once"
+      - name: "定时触发migrator"
+        type: "cron"
+        schedule: "@every 30m"
+
+data:
+  database:
+    addr: 127.0.0.1:3306
+    user: root
+    password: root@2023
+    database: bitstorm-svr-go
+    max_idle_conn : 10
+    max_open_conn: 20
+    max_idle_time: 30
+    slow_threshold_millisecond: 100 # SQL执行超过100ms，就算慢sql
+
+  redis:
+    addr: 127.0.0.1:6379
+    password: root2023
+    db: 0
+    pool_size: 20
+    read_timeout: 120s
+    write_timeout: 120s
+
+  scheduler:
+    workersNum: 100
+    bucketsNum: 5
+    tryLockSeconds: 70
+    tryLockGapMilliSeconds: 1000
+    successExpireSeconds: 130
+  trigger:
+    zrangeGapSeconds: 1
+    workersNum: 10000
+  migrator:
+    workersNum: 1000 #单节点并行协程数
+    migrateStepMinutes: 30 #每次迁移数据的时间范围step，单位：min
+
+log:
+  level: info
+  log_path: ./log
+  max_size: 100 # 日志保留大小，以 M 为单位
+  max_backups: 3 # 保留文件个数
+  console: true # false为不打印到终端
+  filename: xtimer.log
+
+micro:
+  lb:
+    addr:
+      - "127.0.0.1:20002"
